@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TodoApp</string>
+    <string name="add_edit_text_hint">أدخل مهمة</string>
+    <string name="cancel_button_text">إلغاء</string>
+    <string name="add_task_button_text">إضافة</string>
+    <string name="update_button_text">تعديل</string>
+</resources>
