@@ -1,16 +1,12 @@
 package com.todoapp
 
 import android.annotation.SuppressLint
-import android.content.res.ColorStateList
-import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
-import android.widget.EditText
 import android.widget.ImageButton
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -27,16 +23,14 @@ class MainActivity : AppCompatActivity() {
         mainActivity = ActivityMainBinding.inflate(layoutInflater)
         setContentView(mainActivity.root)
 
-        val list = ArrayList<DataClass>()
+        val db = TodoDatabase(this)
 
-        mainActivity.recyclerView.layoutManager = LinearLayoutManager(this)
-        mainActivity.recyclerView.adapter = MyAdapter(this, R.layout.row_layout, list)
+        val list = ArrayList<TaskDataClass>()
+        readDataAndDisplayIt(list, db)
 
         mainActivity.addButton.setOnClickListener {
             val alert = AlertDialog.Builder(this)
             val view: View = LayoutInflater.from(this).inflate(R.layout.add_layout, null)
-            /*val inflater: LayoutInflater = layoutInflater
-            val view2: View = inflater.inflate(R.layout.add_layout, null)*/
             alert.setView(view)
             val textInputLayout: TextInputLayout = view.findViewById(R.id.taskEditText)
             val editText = textInputLayout.editText!!
@@ -44,16 +38,11 @@ class MainActivity : AppCompatActivity() {
             val addButton: Button = view.findViewById(R.id.addButton)
             val addAlert = alert.create()
 
-/*            val colorStateList = ColorStateList (
-                arrayOf(intArrayOf(android.R.attr.state_focused), intArrayOf()),
-                intArrayOf(Color.GRAY, Color.GRAY)
-            )
-            textInputLayout.defaultHintTextColor = colorStateList*/
-
             addButton.setOnClickListener {
                 val taskText = editText.text.toString()
                 if (taskText.isNotEmpty() && taskText.isNotBlank()) {
-                    list.add(DataClass(false, taskText))
+                    db.addTask(TaskDataClass(0, taskText, 0))
+                    readDataAndDisplayIt(list, db)
                     addAlert.dismiss()
                 } else {
                     textInputLayout.error = "Empty Field."
@@ -69,5 +58,17 @@ class MainActivity : AppCompatActivity() {
             }
             addAlert.show()
         }
+    }
+
+    private fun readDataAndDisplayIt(
+        list: ArrayList<TaskDataClass>,
+        db: TodoDatabase
+    ) {
+        list.clear()
+        db.readData().forEach {
+            list.add(it)
+        }
+        mainActivity.recyclerView.layoutManager = LinearLayoutManager(this)
+        mainActivity.recyclerView.adapter = MyAdapter(this, R.layout.row_layout, list,db)
     }
 }

@@ -11,14 +11,18 @@ import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.google.android.material.textfield.TextInputLayout
 
-class MyAdapter(val context: Context, val layout: Int, val list: ArrayList<DataClass>) :
+class MyAdapter(
+    val context: Context,
+    val layout: Int,
+    val list: ArrayList<TaskDataClass>,
+    val db: TodoDatabase
+) :
     RecyclerView.Adapter<MyAdapter.MyViewHold>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHold {
@@ -40,8 +44,7 @@ class MyAdapter(val context: Context, val layout: Int, val list: ArrayList<DataC
     @SuppressLint("MissingInflatedId")
     override fun onBindViewHolder(holder: MyViewHold, position: Int) {
         val data = list[position]
-        holder.checkBox.isChecked = data.isCheck
-
+        holder.checkBox.isChecked = data.isCheck == 1
         holder.taskText.text = data.task
 
         holder.editButton.setOnClickListener {
@@ -61,9 +64,12 @@ class MyAdapter(val context: Context, val layout: Int, val list: ArrayList<DataC
             updateButton.setOnClickListener {
                 val taskText = updateEditText.text.toString()
                 if (taskText.isNotEmpty() || taskText.isNotBlank()) {
-                    list[position].task = taskText
-                    updateAlert.dismiss()
+                    val task = list[position]
+                    db.updateTask(TaskDataClass(task.id, taskText, task.isCheck))
+                    list.clear()
+                    list.addAll(db.readData())
                     notifyDataSetChanged()
+                    updateAlert.dismiss()
                 } else {
                     textInputLayout.error = "Empty Field."
                     updateEditText.doOnTextChanged { text, _, _, _ ->
@@ -80,6 +86,7 @@ class MyAdapter(val context: Context, val layout: Int, val list: ArrayList<DataC
         }
 
         holder.deleteButton.setOnClickListener {
+            db.deleteTask(list[position])
             list.removeAt(position)
             notifyDataSetChanged()
         }
